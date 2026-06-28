@@ -108,7 +108,7 @@ const LANG = {
     bestStreak: 'Meilleure série', totalDays: 'Jours complétés', monthRate: 'Taux du mois',
     greeting: 'Bonjour, Wenwen !',
     badges: 'Badges',
-    installHint: '📲 Ajoute à l'écran d\'accueil pour les rappels',
+    installHint: "📲 Ajoute à l'écran d'accueil pour les rappels",
     pomodoroTitle: 'Minuteur Pomodoro',
     pomodoroWork: 'Concentration',
     pomodoroBreak: 'Pause',
