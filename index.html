@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="玟玟の習慣">
+  <meta name="theme-color" content="#B8E8D4">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <title>玟玟の習慣</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <div id="view-container"></div>
+    <nav id="bottom-nav">
+      <button class="nav-btn active" data-view="today">
+        <span class="nav-icon">☀️</span>
+        <span class="nav-label" data-i18n="today">今日</span>
+      </button>
+      <button class="nav-btn" data-view="tasks">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label" data-i18n="tasks">任務</span>
+      </button>
+      <button class="nav-btn" data-view="calendar">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label" data-i18n="calendar">日曆</span>
+      </button>
+      <button class="nav-btn" data-view="stats">
+        <span class="nav-icon">⭐</span>
+        <span class="nav-label" data-i18n="stats">成就</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Modal: Add / Edit Task -->
+  <div id="modal-overlay" class="hidden">
+    <div id="modal">
+      <div class="modal-header">
+        <h2 id="modal-title" data-i18n="addTask">新增任務</h2>
+        <button id="modal-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <label class="field-label" data-i18n="taskName">任務名稱</label>
+        <div class="name-row">
+          <button id="emoji-btn" class="emoji-btn">🌟</button>
+          <input type="text" id="task-name" data-i18n-placeholder="taskPlaceholder" maxlength="30">
+        </div>
+
+        <label class="field-label" data-i18n="startDate">起始日期</label>
+        <input type="date" id="task-start-date">
+
+        <label class="field-label" data-i18n="dailyTime">執行時間</label>
+        <input type="time" id="task-daily-time">
+
+        <label class="field-label" data-i18n="reminderTime">提醒時間</label>
+        <select id="task-reminder">
+          <option value="0">不提醒</option>
+          <option value="5">5分鐘前</option>
+          <option value="10">10分鐘前</option>
+          <option value="15">15分鐘前</option>
+          <option value="30">30分鐘前</option>
+          <option value="60">1小時前</option>
+        </select>
+
+        <label class="field-label">顏色</label>
+        <div class="color-picker" id="color-picker">
+          <button class="color-dot active" data-color="mint" style="background:#7DCFAB"></button>
+          <button class="color-dot" data-color="pink" style="background:#F4A7B9"></button>
+          <button class="color-dot" data-color="lavender" style="background:#C4B5FD"></button>
+          <button class="color-dot" data-color="sky" style="background:#7DD3FC"></button>
+          <button class="color-dot" data-color="peach" style="background:#FCA87D"></button>
+        </div>
+
+        <div class="modal-actions">
+          <button id="btn-delete-task" class="btn-danger hidden" data-i18n="delete">刪除</button>
+          <div class="modal-actions-right">
+            <button id="btn-cancel" class="btn-ghost" data-i18n="cancel">取消</button>
+            <button id="btn-save" class="btn-primary" data-i18n="save">儲存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Emoji Picker -->
+  <div id="emoji-picker" class="hidden">
+    <div class="emoji-grid" id="emoji-grid"></div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
