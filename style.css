@@ -880,5 +880,57 @@ input:focus, select:focus { border-color: var(--mint-300); }
 }
 .pomo-count strong { color: var(--mint-500); }
 
+.pomo-settings {
+  width: 100%;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  margin-top: 4px;
+}
+.pomo-settings-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+.pomo-settings-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.pomo-setting-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.pomo-setting-label {
+  font-size: 10px;
+  color: var(--text-3);
+  font-weight: 600;
+}
+.pomo-input {
+  width: 52px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 6px 8px;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+  font-family: inherit;
+}
+.pomo-input:focus { border-color: var(--mint-300); }
+.pomo-setting-unit {
+  font-size: 10px;
+  color: var(--text-3);
+}
+
 /* ---- Scrollbar (WebKit) ---- */
 ::-webkit-scrollbar { width: 0; }

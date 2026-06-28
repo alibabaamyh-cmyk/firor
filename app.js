@@ -37,6 +37,9 @@ const LANG = {
     longBreakMin: '長休息 15 分鐘',
     pomoDone: '🍅 一個番茄完成！',
     breakDone: '休息結束，繼續加油！',
+    endTime: '結束時間（選填）',
+    pomoSettings: '計時器設定',
+    editNameHint: '點擊修改名稱',
     months: ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
     weekdays: ['日','一','二','三','四','五','六'],
     badgeList: [
@@ -80,6 +83,9 @@ const LANG = {
     longBreakMin: 'Long break 15 min',
     pomoDone: '🍅 Pomodoro done!',
     breakDone: 'Break over, keep going!',
+    endTime: 'End Time (opt.)',
+    pomoSettings: 'Timer Settings',
+    editNameHint: 'Tap to edit name',
     months: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
     weekdays: ['Su','Mo','Tu','We','Th','Fr','Sa'],
     badgeList: [
@@ -123,6 +129,9 @@ const LANG = {
     longBreakMin: 'Grande pause 15 min',
     pomoDone: '🍅 Pomodoro terminé !',
     breakDone: 'Pause terminée, courage !',
+    endTime: 'Heure de fin (opt.)',
+    pomoSettings: 'Réglages',
+    editNameHint: 'Appuyer pour modifier',
     months: ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'],
     weekdays: ['Di','Lu','Ma','Me','Je','Ve','Sa'],
     badgeList: [
@@ -151,6 +160,8 @@ const STATE = {
   selectedEmoji: '🌟',
   pomodoroCount: 0, // total today
   pomodoroDate: null,
+  appName: '',      // empty = use lang default
+  pomoDurations: { work: 25, break: 5, longBreak: 15 }, // minutes
 };
 
 // Pomodoro state (separate, not persisted between reloads)
@@ -184,8 +195,9 @@ function load() {
     if (data.tasks)       STATE.tasks = data.tasks;
     if (data.completions) STATE.completions = data.completions;
     if (data.lang)        STATE.lang = data.lang;
+    if (data.appName !== undefined) STATE.appName = data.appName;
+    if (data.pomoDurations) STATE.pomoDurations = { ...STATE.pomoDurations, ...data.pomoDurations };
     if (data.pomodoroCount !== undefined) {
-      // reset if different day
       const today = todayStr();
       if (data.pomodoroDate === today) {
         STATE.pomodoroCount = data.pomodoroCount;
@@ -198,9 +210,11 @@ function load() {
 function save() {
   try {
     localStorage.setItem('wenwen-habits', JSON.stringify({
-      tasks:        STATE.tasks,
-      completions:  STATE.completions,
-      lang:         STATE.lang,
+      tasks:         STATE.tasks,
+      completions:   STATE.completions,
+      lang:          STATE.lang,
+      appName:       STATE.appName,
+      pomoDurations: STATE.pomoDurations,
       pomodoroCount: STATE.pomodoroCount,
       pomodoroDate:  STATE.pomodoroDate,
     }));
@@ -393,7 +407,13 @@ function scheduleReminders() {
 // Pomodoro
 // ============================================================
 
-const POMO_DURATIONS = { work: 25*60, break: 5*60, longBreak: 15*60 };
+function pomoDurSec() {
+  return {
+    work:      STATE.pomoDurations.work * 60,
+    break:     STATE.pomoDurations.break * 60,
+    longBreak: STATE.pomoDurations.longBreak * 60,
+  };
+}
 
 function pomoModeLabel() {
   if (POMO.mode === 'work')      return t('pomodoroWork');
@@ -429,7 +449,7 @@ function pomoPause() {
 function pomoReset() {
   clearInterval(POMO.interval);
   POMO.running = false;
-  POMO.secondsLeft = POMO_DURATIONS[POMO.mode];
+  POMO.secondsLeft = pomoDurSec()[POMO.mode];
   updatePomoDisplay();
   updatePomoControls();
 }
@@ -438,7 +458,7 @@ function pomoSkip() {
   clearInterval(POMO.interval);
   POMO.running = false;
   pomoAdvanceMode();
-  POMO.secondsLeft = POMO_DURATIONS[POMO.mode];
+  POMO.secondsLeft = pomoDurSec()[POMO.mode];
   updatePomoDisplay();
   updatePomoControls();
   updatePomoModeLabel();
@@ -471,7 +491,7 @@ function pomoComplete() {
     playBeep();
   }
   pomoAdvanceMode();
-  POMO.secondsLeft = POMO_DURATIONS[POMO.mode];
+  POMO.secondsLeft = pomoDurSec()[POMO.mode];
   updatePomoDisplay();
   updatePomoModeLabel();
   updatePomoControls();
@@ -498,7 +518,7 @@ function updatePomoDisplay() {
   // ring progress
   const ring = document.getElementById('pomo-ring');
   if (ring) {
-    const total = POMO_DURATIONS[POMO.mode];
+    const total = pomoDurSec()[POMO.mode];
     const progress = 1 - (POMO.secondsLeft / total);
     const circumference = 2 * Math.PI * 54;
     ring.style.strokeDashoffset = circumference * (1 - progress);
@@ -528,6 +548,35 @@ function updatePomoCount() {
   if (el) el.textContent = STATE.pomodoroCount;
 }
 
+function setPomoWork(min) {
+  const v = Math.max(1, Math.min(99, parseInt(min) || 25));
+  STATE.pomoDurations.work = v;
+  if (POMO.mode === 'work' && !POMO.running) { POMO.secondsLeft = v * 60; updatePomoDisplay(); }
+  save();
+}
+function setPomoBreak(min) {
+  const v = Math.max(1, Math.min(60, parseInt(min) || 5));
+  STATE.pomoDurations.break = v;
+  if (POMO.mode === 'break' && !POMO.running) { POMO.secondsLeft = v * 60; updatePomoDisplay(); }
+  save();
+}
+function setPomoLongBreak(min) {
+  const v = Math.max(1, Math.min(60, parseInt(min) || 15));
+  STATE.pomoDurations.longBreak = v;
+  if (POMO.mode === 'longBreak' && !POMO.running) { POMO.secondsLeft = v * 60; updatePomoDisplay(); }
+  save();
+}
+
+function editAppName() {
+  const cur = STATE.appName || t('appName');
+  const name = prompt(t('editNameHint'), cur);
+  if (name !== null && name.trim()) {
+    STATE.appName = name.trim();
+    save();
+    renderView();
+  }
+}
+
 // ============================================================
 // Render: Today View
 // ============================================================
@@ -549,7 +598,7 @@ function renderToday() {
   return `
     <div class="view-header">
       <div class="lang-row">
-        <h1>${t('appName')}</h1>
+        <h1 onclick="editAppName()" style="cursor:pointer;">${STATE.appName || t('appName')} <span style="font-size:15px;opacity:0.35;font-weight:400;">✎</span></h1>
         <div class="lang-switcher">
           ${['zh','en','fr'].map(l =>
             `<button class="lang-btn ${STATE.lang===l?'active':''}" onclick="setLang('${l}')">${l.toUpperCase()}</button>`
@@ -599,7 +648,7 @@ function renderToday() {
               <div class="task-emoji">${task.emoji}</div>
               <div class="task-info">
                 <div class="task-name">${escHtml(task.name)}</div>
-                <div class="task-time">${task.scheduledTime}</div>
+                <div class="task-time">${task.scheduledTime}${task.endTime ? ' – ' + task.endTime : ''}</div>
               </div>
             </div>`;
         }).join('')}
@@ -618,7 +667,7 @@ function renderToday() {
 
 function renderPomodoro() {
   const circumference = 2 * Math.PI * 54;
-  const progress = 1 - (POMO.secondsLeft / POMO_DURATIONS[POMO.mode]);
+  const progress = 1 - (POMO.secondsLeft / pomoDurSec()[POMO.mode]);
   const offset = circumference * (1 - progress);
 
   return `
@@ -647,6 +696,32 @@ function renderPomodoro() {
         <div class="pomo-count">
           🍅 ${t('pomodoroCount')}: <strong id="pomo-count-num">${STATE.pomodoroCount}</strong>
         </div>
+        <div class="pomo-settings">
+          <div class="pomo-settings-title">${t('pomoSettings')}</div>
+          <div class="pomo-settings-row">
+            <div class="pomo-setting-item">
+              <span class="pomo-setting-label">${t('pomodoroWork')}</span>
+              <input type="number" class="pomo-input" min="1" max="99"
+                value="${STATE.pomoDurations.work}"
+                onchange="setPomoWork(this.value)" onblur="setPomoWork(this.value)">
+              <span class="pomo-setting-unit">min</span>
+            </div>
+            <div class="pomo-setting-item">
+              <span class="pomo-setting-label">${t('pomodoroBreak')}</span>
+              <input type="number" class="pomo-input" min="1" max="60"
+                value="${STATE.pomoDurations.break}"
+                onchange="setPomoBreak(this.value)" onblur="setPomoBreak(this.value)">
+              <span class="pomo-setting-unit">min</span>
+            </div>
+            <div class="pomo-setting-item">
+              <span class="pomo-setting-label">${t('pomodoroLongBreak')}</span>
+              <input type="number" class="pomo-input" min="1" max="60"
+                value="${STATE.pomoDurations.longBreak}"
+                onchange="setPomoLongBreak(this.value)" onblur="setPomoLongBreak(this.value)">
+              <span class="pomo-setting-unit">min</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   `;
@@ -672,7 +747,7 @@ function renderTasks() {
           <span class="mgmt-task-emoji">${task.emoji}</span>
           <div class="mgmt-task-info">
             <div class="mgmt-task-name">${escHtml(task.name)}</div>
-            <div class="mgmt-task-meta">${task.scheduledTime} · ${task.startDate}</div>
+            <div class="mgmt-task-meta">${task.scheduledTime}${task.endTime ? ' – ' + task.endTime : ''} · ${task.startDate}</div>
           </div>
           <div class="color-bar color-bar-${task.color}" style="height:32px;width:4px;border-radius:99px;"></div>
           <span class="mgmt-task-arrow">›</span>
@@ -865,6 +940,7 @@ function openAddTask() {
   document.getElementById('task-start-date').value = todayStr();
   document.getElementById('task-daily-time').value = '08:00';
   document.getElementById('task-reminder').selectedIndex = 0;
+  document.getElementById('task-end-time').value = '';
   document.getElementById('btn-delete-task').classList.add('hidden');
   setModalColor('mint');
   setModalEmoji('🌟');
@@ -883,6 +959,7 @@ function openEditTask(taskId) {
   document.getElementById('task-name').value = task.name;
   document.getElementById('task-start-date').value = task.startDate;
   document.getElementById('task-daily-time').value = task.scheduledTime;
+  document.getElementById('task-end-time').value = task.endTime || '';
   document.getElementById('btn-delete-task').classList.remove('hidden');
   setModalColor(task.color);
   setModalEmoji(task.emoji);
@@ -911,17 +988,18 @@ function saveTask() {
   if (!name) { document.getElementById('task-name').focus(); return; }
   const startDate   = document.getElementById('task-start-date').value || todayStr();
   const scheduledTime = document.getElementById('task-daily-time').value || '08:00';
+  const endTime = document.getElementById('task-end-time').value || '';
   const reminderMinutes = parseInt(document.getElementById('task-reminder').value) || 0;
 
   if (STATE.editTaskId) {
     const idx = STATE.tasks.findIndex(t => t.id === STATE.editTaskId);
     if (idx >= 0) {
-      STATE.tasks[idx] = { ...STATE.tasks[idx], name, startDate, scheduledTime, reminderMinutes,
+      STATE.tasks[idx] = { ...STATE.tasks[idx], name, startDate, scheduledTime, endTime, reminderMinutes,
         color: STATE.selectedColor, emoji: STATE.selectedEmoji };
     }
   } else {
     STATE.tasks.push({
-      id: uuid(), name, startDate, scheduledTime, reminderMinutes,
+      id: uuid(), name, startDate, scheduledTime, endTime, reminderMinutes,
       color: STATE.selectedColor, emoji: STATE.selectedEmoji, active: true,
     });
   }
@@ -1054,6 +1132,7 @@ function registerSW() {
 function init() {
   try {
     load();
+    POMO.secondsLeft = pomoDurSec()[POMO.mode];
     const d = new Date();
     STATE.calMonth = { year: d.getFullYear(), month: d.getMonth() + 1 };
     if (STATE.pomodoroDate !== todayStr()) {

@@ -1,4 +1,4 @@
-const CACHE = 'wenwen-v2';
+const CACHE = 'wenwen-v3';
 const ASSETS = ['.', 'index.html', 'style.css', 'app.js', 'manifest.json', 'icon.svg'];
 
 self.addEventListener('install', e => {
