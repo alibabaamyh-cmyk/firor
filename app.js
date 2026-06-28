@@ -41,6 +41,12 @@ const LANG = {
     endTime: '結束時間（選填）',
     pomoSettings: '計時器設定',
     editNameHint: '點擊修改名稱',
+    backupTitle: '資料備份',
+    exportBtn: '匯出備份',
+    importBtn: '匯入還原',
+    exportDone: '✅ 備份已下載',
+    importDone: '✅ 資料已還原',
+    importError: '❌ 檔案格式錯誤',
     months: ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
     weekdays: ['日','一','二','三','四','五','六'],
     badgeList: [
@@ -88,6 +94,12 @@ const LANG = {
     endTime: 'End Time (opt.)',
     pomoSettings: 'Timer Settings',
     editNameHint: 'Tap to edit name',
+    backupTitle: 'Data Backup',
+    exportBtn: 'Export Backup',
+    importBtn: 'Restore Backup',
+    exportDone: '✅ Backup downloaded',
+    importDone: '✅ Data restored',
+    importError: '❌ Invalid file format',
     months: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
     weekdays: ['Su','Mo','Tu','We','Th','Fr','Sa'],
     badgeList: [
@@ -135,6 +147,12 @@ const LANG = {
     endTime: 'Heure de fin (opt.)',
     pomoSettings: 'Réglages',
     editNameHint: 'Appuyer pour modifier',
+    backupTitle: 'Sauvegarde',
+    exportBtn: 'Exporter',
+    importBtn: 'Restaurer',
+    exportDone: '✅ Sauvegarde téléchargée',
+    importDone: '✅ Données restaurées',
+    importError: '❌ Fichier invalide',
     months: ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'],
     weekdays: ['Di','Lu','Ma','Me','Je','Ve','Sa'],
     badgeList: [
@@ -893,6 +911,19 @@ function renderStats() {
           </div>`).join('')}
       </div>
     </div>
+
+    <div class="backup-section">
+      <h3>${t('backupTitle')}</h3>
+      <div class="backup-row">
+        <button class="backup-btn backup-export" onclick="exportData()">
+          <span>⬇️</span> ${t('exportBtn')}
+        </button>
+        <button class="backup-btn backup-import" onclick="importData()">
+          <span>⬆️</span> ${t('importBtn')}
+        </button>
+      </div>
+      <p class="backup-hint">匯出 → 儲存到手機備份<br>換手機前先匯出，新手機匯入還原</p>
+    </div>
   `;
 }
 
@@ -1121,6 +1152,60 @@ function wireEvents() {
       picker.classList.add('hidden');
     }
   });
+}
+
+// ============================================================
+// Backup / Restore
+// ============================================================
+
+function exportData() {
+  const data = {
+    _version: 1,
+    exportedAt: new Date().toISOString(),
+    tasks:         STATE.tasks,
+    completions:   STATE.completions,
+    appName:       STATE.appName,
+    lang:          STATE.lang,
+    pomoDurations: STATE.pomoDurations,
+  };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `wenwen-backup-${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(t('exportDone'));
+}
+
+function importData() {
+  const input = document.createElement('input');
+  input.type  = 'file';
+  input.accept = '.json,application/json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data.tasks || !data.completions) throw new Error('bad format');
+        STATE.tasks       = data.tasks;
+        STATE.completions = data.completions;
+        if (data.appName       !== undefined) STATE.appName       = data.appName;
+        if (data.lang)                         STATE.lang          = data.lang;
+        if (data.pomoDurations)                STATE.pomoDurations = { ...STATE.pomoDurations, ...data.pomoDurations };
+        save();
+        renderView();
+        showToast(t('importDone'));
+      } catch(err) {
+        showToast(t('importError'));
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
 }
 
 // ============================================================

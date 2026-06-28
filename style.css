@@ -892,6 +892,50 @@ input:focus, select:focus { border-color: var(--mint-300); }
 }
 .pomo-count strong { color: var(--mint-500); }
 
+.backup-section {
+  padding: 0 16px 32px;
+}
+.backup-section h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+.backup-row {
+  display: flex;
+  gap: 10px;
+}
+.backup-btn {
+  flex: 1;
+  border: none;
+  border-radius: var(--r-lg);
+  padding: 14px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: opacity 0.15s;
+}
+.backup-btn:active { opacity: 0.75; }
+.backup-export {
+  background: var(--mint-100);
+  color: var(--mint-500);
+}
+.backup-import {
+  background: var(--pink-100);
+  color: var(--pink-400);
+}
+.backup-hint {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 10px;
+  line-height: 1.6;
+}
+
 .pomo-settings {
   width: 100%;
   border-top: 1px solid var(--border);
