@@ -662,6 +662,18 @@ input:focus, select:focus { border-color: var(--mint-300); }
   justify-content: center;
 }
 
+.date-range-row {
+  display: flex;
+  gap: 10px;
+}
+.date-range-col {
+  flex: 1;
+  min-width: 0;
+}
+.date-range-col input {
+  width: 100%;
+}
+
 .color-picker {
   display: flex;
   gap: 12px;

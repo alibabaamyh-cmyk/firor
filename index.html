@@ -55,8 +55,16 @@
         <label class="field-label" data-i18n="dailyTime">執行時間</label>
         <input type="time" id="task-daily-time">
 
-        <label class="field-label" data-i18n="endTime">結束時間（選填）</label>
-        <input type="time" id="task-end-time">
+        <div class="date-range-row">
+          <div class="date-range-col">
+            <label class="field-label" data-i18n="endDate">結束日期（選填）</label>
+            <input type="date" id="task-end-date">
+          </div>
+          <div class="date-range-col">
+            <label class="field-label" data-i18n="endTime">結束時間（選填）</label>
+            <input type="time" id="task-end-time">
+          </div>
+        </div>
 
         <label class="field-label" data-i18n="reminderTime">提醒時間</label>
         <select id="task-reminder">

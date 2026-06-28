@@ -37,6 +37,7 @@ const LANG = {
     longBreakMin: '長休息 15 分鐘',
     pomoDone: '🍅 一個番茄完成！',
     breakDone: '休息結束，繼續加油！',
+    endDate: '結束日期（選填）',
     endTime: '結束時間（選填）',
     pomoSettings: '計時器設定',
     editNameHint: '點擊修改名稱',
@@ -83,6 +84,7 @@ const LANG = {
     longBreakMin: 'Long break 15 min',
     pomoDone: '🍅 Pomodoro done!',
     breakDone: 'Break over, keep going!',
+    endDate: 'End Date (opt.)',
     endTime: 'End Time (opt.)',
     pomoSettings: 'Timer Settings',
     editNameHint: 'Tap to edit name',
@@ -129,6 +131,7 @@ const LANG = {
     longBreakMin: 'Grande pause 15 min',
     pomoDone: '🍅 Pomodoro terminé !',
     breakDone: 'Pause terminée, courage !',
+    endDate: 'Date de fin (opt.)',
     endTime: 'Heure de fin (opt.)',
     pomoSettings: 'Réglages',
     editNameHint: 'Appuyer pour modifier',
@@ -254,7 +257,9 @@ function uuid() {
 function tasksForDate(dateStr) {
   return STATE.tasks.filter(task => {
     if (!task.active) return false;
-    return task.startDate <= dateStr;
+    if (task.startDate > dateStr) return false;
+    if (task.endDate && task.endDate < dateStr) return false;
+    return true;
   });
 }
 
@@ -747,7 +752,7 @@ function renderTasks() {
           <span class="mgmt-task-emoji">${task.emoji}</span>
           <div class="mgmt-task-info">
             <div class="mgmt-task-name">${escHtml(task.name)}</div>
-            <div class="mgmt-task-meta">${task.scheduledTime}${task.endTime ? ' – ' + task.endTime : ''} · ${task.startDate}</div>
+            <div class="mgmt-task-meta">${task.scheduledTime}${task.endTime ? ' – ' + task.endTime : ''} · ${task.startDate}${task.endDate ? ' → ' + task.endDate : ''}</div>
           </div>
           <div class="color-bar color-bar-${task.color}" style="height:32px;width:4px;border-radius:99px;"></div>
           <span class="mgmt-task-arrow">›</span>
@@ -940,6 +945,7 @@ function openAddTask() {
   document.getElementById('task-start-date').value = todayStr();
   document.getElementById('task-daily-time').value = '08:00';
   document.getElementById('task-reminder').selectedIndex = 0;
+  document.getElementById('task-end-date').value = '';
   document.getElementById('task-end-time').value = '';
   document.getElementById('btn-delete-task').classList.add('hidden');
   setModalColor('mint');
@@ -959,6 +965,7 @@ function openEditTask(taskId) {
   document.getElementById('task-name').value = task.name;
   document.getElementById('task-start-date').value = task.startDate;
   document.getElementById('task-daily-time').value = task.scheduledTime;
+  document.getElementById('task-end-date').value = task.endDate || '';
   document.getElementById('task-end-time').value = task.endTime || '';
   document.getElementById('btn-delete-task').classList.remove('hidden');
   setModalColor(task.color);
@@ -988,18 +995,19 @@ function saveTask() {
   if (!name) { document.getElementById('task-name').focus(); return; }
   const startDate   = document.getElementById('task-start-date').value || todayStr();
   const scheduledTime = document.getElementById('task-daily-time').value || '08:00';
+  const endDate = document.getElementById('task-end-date').value || '';
   const endTime = document.getElementById('task-end-time').value || '';
   const reminderMinutes = parseInt(document.getElementById('task-reminder').value) || 0;
 
   if (STATE.editTaskId) {
     const idx = STATE.tasks.findIndex(t => t.id === STATE.editTaskId);
     if (idx >= 0) {
-      STATE.tasks[idx] = { ...STATE.tasks[idx], name, startDate, scheduledTime, endTime, reminderMinutes,
+      STATE.tasks[idx] = { ...STATE.tasks[idx], name, startDate, endDate, scheduledTime, endTime, reminderMinutes,
         color: STATE.selectedColor, emoji: STATE.selectedEmoji };
     }
   } else {
     STATE.tasks.push({
-      id: uuid(), name, startDate, scheduledTime, endTime, reminderMinutes,
+      id: uuid(), name, startDate, endDate, scheduledTime, endTime, reminderMinutes,
       color: STATE.selectedColor, emoji: STATE.selectedEmoji, active: true,
     });
   }
