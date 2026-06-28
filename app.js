@@ -1052,18 +1052,23 @@ function registerSW() {
 // ============================================================
 
 function init() {
-  load();
-  const d = new Date();
-  STATE.calMonth = { year: d.getFullYear(), month: d.getMonth() + 1 };
-  // reset pomo count if new day
-  if (STATE.pomodoroDate !== todayStr()) {
-    STATE.pomodoroCount = 0;
-    STATE.pomodoroDate  = todayStr();
+  try {
+    load();
+    const d = new Date();
+    STATE.calMonth = { year: d.getFullYear(), month: d.getMonth() + 1 };
+    if (STATE.pomodoroDate !== todayStr()) {
+      STATE.pomodoroCount = 0;
+      STATE.pomodoroDate  = todayStr();
+    }
+    renderView();
+    wireEvents();
+    registerSW();
+    requestNotifPermission().then(scheduleReminders);
+  } catch(e) {
+    document.getElementById('view-container').innerHTML =
+      `<div style="padding:24px;color:#c00;font-size:13px;white-space:pre-wrap;font-family:monospace;">`
+      + `⚠️ 錯誤：${e.message}\n\n${e.stack}</div>`;
   }
-  renderView();
-  wireEvents();
-  registerSW();
-  requestNotifPermission().then(scheduleReminders);
 }
 
 document.addEventListener('DOMContentLoaded', init);
